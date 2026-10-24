@@ -1,28 +1,277 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>yelborji – Jeux mobiles</title>
+<title>Lantern Games — Relaxing puzzle games</title>
+<meta name="description" content="Lantern Games makes calm, beautiful puzzle games for Android: Mahjong Lantern, Lantern Blocks and Lantern Sort.">
+<link rel="icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 720px; margin: 0 auto; padding: 32px 16px; line-height: 1.6; color: #222; background: #faf8f4; }
-  h1 { color: #6b2fb3; } .game { background: #fff; border-radius: 12px; padding: 16px 20px; margin: 16px 0; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-  a { color: #6b2fb3; }
+  :root {
+    --night: #120a2e;
+    --night-2: #1d1145;
+    --ink: #f6f1ff;
+    --muted: #b9add8;
+    --gold: #ffc85a;
+    --gold-2: #ff9f2e;
+    --card: rgba(255, 255, 255, 0.06);
+    --line: rgba(255, 214, 140, 0.25);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; font-family: Poppins, system-ui, sans-serif; color: var(--ink); background: var(--night);
+    line-height: 1.6; overflow-x: hidden;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- en-tête ---------- */
+  header {
+    position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
+    background: rgba(18, 10, 46, 0.72); border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; letter-spacing: 0.5px; font-size: 20px; }
+  .brand img { width: 26px; height: auto; filter: drop-shadow(0 0 8px rgba(255, 190, 90, 0.8)); }
+  .brand span { background: linear-gradient(180deg, #fff3c4, var(--gold) 55%, var(--gold-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 15px; }
+  .nav-links a { text-decoration: none; color: var(--muted); transition: color .2s; }
+  .nav-links a:hover { color: var(--ink); }
+  .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .lang button { background: none; border: 0; color: var(--muted); font: 600 13px Poppins, sans-serif; padding: 6px 12px; cursor: pointer; }
+  .lang button.on { background: var(--gold); color: #2a1600; }
+
+  /* ---------- héros ---------- */
+  .hero {
+    position: relative; min-height: 88vh; display: flex; align-items: center; text-align: center;
+    background: radial-gradient(ellipse at 50% 110%, rgba(255, 160, 70, 0.35), transparent 60%),
+                linear-gradient(180deg, rgba(18, 10, 46, 0.25), rgba(18, 10, 46, 0.9) 95%),
+                url("img/night.jpg") center 30% / cover no-repeat;
+    overflow: hidden;
+  }
+  .hero .wrap { position: relative; z-index: 2; padding-top: 40px; padding-bottom: 80px; }
+  .kicker { display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; background: rgba(0, 0, 0, 0.2); }
+  h1 { font-size: clamp(40px, 7vw, 80px); line-height: 1.05; margin: 22px 0 18px; font-weight: 800; }
+  h1 .glow { background: linear-gradient(180deg, #fff6d0, var(--gold) 50%, var(--gold-2)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 24px rgba(255, 170, 60, 0.45)); }
+  .lead { max-width: 640px; margin: 0 auto 34px; font-size: clamp(16px, 2.2vw, 19px); color: #e2d9f7; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; border-radius: 999px; font-weight: 700; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+  .btn-gold { background: linear-gradient(180deg, #ffd977, var(--gold-2)); color: #2a1600; box-shadow: 0 10px 30px rgba(255, 160, 50, 0.35); }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(255, 160, 50, 0.5); }
+  .btn-ghost { border: 1px solid var(--line); color: var(--ink); margin-left: 10px; }
+  .btn-ghost:hover { background: rgba(255, 255, 255, 0.06); }
+
+  /* lanternes qui montent */
+  .lanterns { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  .lanterns img { position: absolute; bottom: -120px; width: 40px; opacity: 0.85; filter: drop-shadow(0 0 16px rgba(255, 170, 60, 0.9)); animation: rise linear infinite; }
+  @keyframes rise {
+    0% { transform: translate(0, 0) rotate(-3deg); opacity: 0; }
+    10% { opacity: 0.9; }
+    50% { transform: translate(18px, -55vh) rotate(3deg); }
+    100% { transform: translate(-10px, -115vh) rotate(-3deg); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .lanterns img { animation: none; display: none; } }
+
+  /* ---------- sections ---------- */
+  section { padding: 90px 0; }
+  .eyebrow { color: var(--gold); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; font-size: 13px; text-align: center; }
+  h2 { text-align: center; font-size: clamp(28px, 4vw, 42px); margin: 8px 0 14px; }
+  .sub { text-align: center; color: var(--muted); max-width: 620px; margin: 0 auto 50px; }
+
+  .games { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 26px; }
+  .game {
+    position: relative; background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 28px; text-align: center;
+    transition: transform .25s, border-color .25s, box-shadow .25s;
+  }
+  .game:hover { transform: translateY(-6px); border-color: var(--line); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 170, 60, 0.12); }
+  .game img.icon { width: 120px; height: 120px; border-radius: 28px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); }
+  .game h3 { margin: 18px 0 4px; font-size: 22px; }
+  .game .tag { color: var(--gold); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .game p { color: var(--muted); font-size: 15px; margin: 12px 0 22px; min-height: 72px; }
+  .play {
+    display: inline-flex; align-items: center; gap: 10px; background: #000; color: #fff; text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; padding: 9px 18px; font-size: 14px; font-weight: 600;
+  }
+  .play svg { width: 20px; height: 20px; }
+  .play:hover { border-color: var(--gold); }
+  .soon { display: inline-block; padding: 9px 18px; border-radius: 12px; border: 1px dashed var(--line); color: var(--gold); font-weight: 600; font-size: 14px; }
+  .small-links { margin-top: 14px; font-size: 13px; }
+  .small-links a { color: var(--muted); }
+  .badge-new { position: absolute; top: 18px; right: 18px; background: var(--gold); color: #2a1600; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; letter-spacing: 1px; }
+
+  .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+  .value { background: var(--card); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 26px; }
+  .value .ico { font-size: 28px; }
+  .value h4 { margin: 10px 0 6px; font-size: 18px; }
+  .value p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .contact { text-align: center; background: radial-gradient(ellipse at 50% 0%, rgba(255, 170, 60, 0.18), transparent 70%); }
+  .contact a.mail { font-size: clamp(18px, 3vw, 24px); font-weight: 700; color: var(--gold); text-decoration: none; border-bottom: 2px solid var(--line); }
+
+  footer { border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 30px 0; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; }
+  footer a { color: var(--muted); }
+
+  @media (max-width: 640px) {
+    .nav-links a.hide-sm { display: none; }
+    .btn-ghost { margin: 12px 0 0; }
+    section { padding: 64px 0; }
+  }
 </style>
 </head>
 <body>
-<h1>yelborji – Jeux mobiles</h1>
-<p>Jeux de réflexion pour Android. / Puzzle games for Android.</p>
-<div class="game">
-  <h2>Mahjong Lantern</h2>
-  <p><a href="https://play.google.com/store/apps/details?id=com.yelborji.mahjonglantern">Google Play</a> ·
-     <a href="https://sites.google.com/view/mahjong-lantern-privacy">Politique de confidentialité / Privacy policy</a></p>
-</div>
-<div class="game">
-  <h2>Lantern Blocks</h2>
-  <p><a href="https://play.google.com/store/apps/details?id=com.yelborji.lanternblocks">Google Play</a> ·
-     <a href="https://sites.google.com/view/mahjong-lantern-privacy/lantern-blocks">Politique de confidentialité / Privacy policy</a></p>
-</div>
-<p>Contact : mahjonglantern@gmail.com</p>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top"><img src="img/lantern.png" alt=""><span>Lantern Games</span></a>
+    <nav class="nav-links">
+      <a class="hide-sm" href="#games" data-i18n="nav_games">Games</a>
+      <a class="hide-sm" href="#contact" data-i18n="nav_contact">Contact</a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="fr">FR</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="lanterns" aria-hidden="true">
+      <img src="img/lantern.png" alt="" style="left:6%;animation-duration:19s;animation-delay:-2s;width:34px">
+      <img src="img/lantern.png" alt="" style="left:18%;animation-duration:24s;animation-delay:-11s">
+      <img src="img/lantern.png" alt="" style="left:31%;animation-duration:21s;animation-delay:-6s;width:28px">
+      <img src="img/lantern.png" alt="" style="left:47%;animation-duration:26s;animation-delay:-16s;width:46px">
+      <img src="img/lantern.png" alt="" style="left:62%;animation-duration:20s;animation-delay:-3s;width:30px">
+      <img src="img/lantern.png" alt="" style="left:76%;animation-duration:23s;animation-delay:-13s">
+      <img src="img/lantern.png" alt="" style="left:90%;animation-duration:18s;animation-delay:-8s;width:32px">
+    </div>
+    <div class="wrap">
+      <span class="kicker" data-i18n="kicker">Independent game studio</span>
+      <h1><span data-i18n="title_1">Puzzle games that</span><br><span class="glow" data-i18n="title_2">light up your evenings</span></h1>
+      <p class="lead" data-i18n="lead">Calm, beautiful and satisfying puzzle games under a starry sky full of lanterns. Free to play, offline, in six languages.</p>
+      <a class="btn btn-gold" href="#games" data-i18n="cta">Discover our games</a>
+      <a class="btn btn-ghost" href="#contact" data-i18n="cta2">Contact us</a>
+    </div>
+  </section>
+
+  <section id="games">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="games_eyebrow">Our games</div>
+      <h2 data-i18n="games_title">The Lantern collection</h2>
+      <p class="sub" data-i18n="games_sub">Three ways to relax and train your brain — each one crafted with glowing visuals and gentle sounds.</p>
+      <div class="games">
+
+        <article class="game">
+          <img class="icon" src="img/mahjong-lantern.png" alt="Mahjong Lantern icon">
+          <div class="tag" data-i18n="g1_tag">Mahjong solitaire</div>
+          <h3>Mahjong Lantern</h3>
+          <p data-i18n="g1_desc">Match pairs of beautiful 3D tiles across magical levels, at your own pace.</p>
+          <a class="play" href="https://play.google.com/store/apps/details?id=com.yelborji.mahjonglantern" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#34a853" d="M3.6 2.3 13.4 12l-9.8 9.7c-.4-.2-.6-.6-.6-1.1V3.4c0-.5.2-.9.6-1.1z"/><path fill="#fbbc04" d="m16.7 15.3-3.3-3.3 3.3-3.3 3.7 2.1c1 .6 1 1.9 0 2.5z"/><path fill="#4285f4" d="M16.7 8.7 13.4 12 3.6 2.3c.3-.2.8-.2 1.2 0z"/><path fill="#ea4335" d="M4.8 21.7c-.4.2-.9.2-1.2 0L13.4 12l3.3 3.3z"/></svg>
+            <span data-i18n="play">Get it on Google Play</span>
+          </a>
+          <div class="small-links"><a href="https://sites.google.com/view/mahjong-lantern-privacy" target="_blank" rel="noopener" data-i18n="privacy">Privacy policy</a></div>
+        </article>
+
+        <article class="game">
+          <span class="badge-new" data-i18n="new">NEW</span>
+          <img class="icon" src="img/lantern-blocks.png" alt="Lantern Blocks icon">
+          <div class="tag" data-i18n="g2_tag">Block puzzle</div>
+          <h3>Lantern Blocks</h3>
+          <p data-i18n="g2_desc">Place glowing jewel blocks, clear lines and beat 100 adventure levels.</p>
+          <a class="play" href="https://play.google.com/store/apps/details?id=com.yelborji.lanternblocks" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#34a853" d="M3.6 2.3 13.4 12l-9.8 9.7c-.4-.2-.6-.6-.6-1.1V3.4c0-.5.2-.9.6-1.1z"/><path fill="#fbbc04" d="m16.7 15.3-3.3-3.3 3.3-3.3 3.7 2.1c1 .6 1 1.9 0 2.5z"/><path fill="#4285f4" d="M16.7 8.7 13.4 12 3.6 2.3c.3-.2.8-.2 1.2 0z"/><path fill="#ea4335" d="M4.8 21.7c-.4.2-.9.2-1.2 0L13.4 12l3.3 3.3z"/></svg>
+            <span data-i18n="play">Get it on Google Play</span>
+          </a>
+          <div class="small-links"><a href="https://sites.google.com/view/mahjong-lantern-privacy/lantern-blocks" target="_blank" rel="noopener" data-i18n="privacy">Privacy policy</a></div>
+        </article>
+
+        <article class="game">
+          <img class="icon" src="img/lantern-sort.png" alt="Lantern Sort icon">
+          <div class="tag" data-i18n="g3_tag">Ball sort puzzle</div>
+          <h3>Lantern Sort</h3>
+          <p data-i18n="g3_desc">Sort the glowing balls so each tube holds a single color. 300 levels to master.</p>
+          <span class="soon" data-i18n="soon">Coming soon</span>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="values_eyebrow">Our promise</div>
+      <h2 data-i18n="values_title">Made for calm moments</h2>
+      <div class="values" style="margin-top:40px">
+        <div class="value"><div class="ico">🏮</div><h4 data-i18n="v1_t">Beautiful by design</h4><p data-i18n="v1_d">Night skies, warm lanterns and glowing pieces — every game is a pleasure to look at.</p></div>
+        <div class="value"><div class="ico">🧠</div><h4 data-i18n="v2_t">Easy to learn</h4><p data-i18n="v2_d">Simple rules, guided tutorials and levels that grow gently in difficulty.</p></div>
+        <div class="value"><div class="ico">✈️</div><h4 data-i18n="v3_t">Play anywhere</h4><p data-i18n="v3_d">All our games work offline, with no account needed.</p></div>
+        <div class="value"><div class="ico">🌍</div><h4 data-i18n="v4_t">Six languages</h4><p data-i18n="v4_d">English, French, Spanish, Portuguese, German and Italian.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="contact_eyebrow">Contact</div>
+      <h2 data-i18n="contact_title">We'd love to hear from you</h2>
+      <p class="sub" data-i18n="contact_sub">Questions, ideas or feedback about our games? Write to us — we read every message.</p>
+      <a class="mail" href="mailto:mahjonglantern@gmail.com">mahjonglantern@gmail.com</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> Lantern Games</span>
+    <span>
+      <a href="https://sites.google.com/view/mahjong-lantern-privacy" target="_blank" rel="noopener">Mahjong Lantern — <span data-i18n="privacy">Privacy policy</span></a> ·
+      <a href="https://sites.google.com/view/mahjong-lantern-privacy/lantern-blocks" target="_blank" rel="noopener">Lantern Blocks — <span data-i18n="privacy">Privacy policy</span></a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  var T = {
+    fr: {
+      nav_games: "Jeux", nav_contact: "Contact", kicker: "Studio de jeux indépendant",
+      title_1: "Des jeux de réflexion qui", title_2: "illuminent vos soirées",
+      lead: "Des jeux de réflexion apaisants, beaux et satisfaisants, sous un ciel étoilé rempli de lanternes. Gratuits, jouables hors ligne et en six langues.",
+      cta: "Découvrir nos jeux", cta2: "Nous contacter",
+      games_eyebrow: "Nos jeux", games_title: "La collection Lantern",
+      games_sub: "Trois façons de se détendre et d'entraîner son esprit, chacune avec des graphismes lumineux et des sons doux.",
+      g1_tag: "Mahjong solitaire", g1_desc: "Associez des paires de superbes tuiles en relief au fil de niveaux magiques, à votre rythme.",
+      g2_tag: "Puzzle de blocs", g2_desc: "Placez des blocs-joyaux lumineux, complétez des lignes et relevez 100 niveaux d'aventure.",
+      g3_tag: "Tri de billes", g3_desc: "Triez les billes lumineuses pour qu'il n'y ait qu'une couleur par tube. 300 niveaux à maîtriser.",
+      play: "Disponible sur Google Play", privacy: "Politique de confidentialité", soon: "Bientôt disponible", new: "NOUVEAU",
+      values_eyebrow: "Notre promesse", values_title: "Pensés pour les moments de calme",
+      v1_t: "Soignés dans les moindres détails", v1_d: "Ciels de nuit, lanternes chaleureuses et pièces lumineuses : chaque jeu est un plaisir pour les yeux.",
+      v2_t: "Faciles à prendre en main", v2_d: "Des règles simples, des tutoriels guidés et une difficulté qui augmente en douceur.",
+      v3_t: "Jouez partout", v3_d: "Tous nos jeux fonctionnent hors ligne, sans compte à créer.",
+      v4_t: "Six langues", v4_d: "Français, anglais, espagnol, portugais, allemand et italien.",
+      contact_eyebrow: "Contact", contact_title: "Écrivez-nous", contact_sub: "Une question, une idée ou un avis sur nos jeux ? Écrivez-nous : nous lisons chaque message."
+    }
+  };
+  var EN = {};
+  document.querySelectorAll("[data-i18n]").forEach(function (el) { EN[el.dataset.i18n] = el.textContent; });
+  function setLang(l) {
+    document.documentElement.lang = l;
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var k = el.dataset.i18n; el.textContent = (l === "fr" && T.fr[k]) ? T.fr[k] : EN[k];
+    });
+    document.querySelectorAll(".lang button").forEach(function (b) { b.classList.toggle("on", b.dataset.lang === l); });
+    try { localStorage.setItem("lang", l); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem("lang"); } catch (e) {}
+  setLang(saved || ((navigator.language || "en").slice(0, 2) === "fr" ? "fr" : "en"));
+  document.querySelectorAll(".lang button").forEach(function (b) { b.addEventListener("click", function () { setLang(b.dataset.lang); }); });
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </body>
 </html>
